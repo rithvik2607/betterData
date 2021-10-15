@@ -4,13 +4,14 @@ const mongoose = require('mongoose');
 
 const MlModelSchema = require('../models/mlModels');
 const auth = require('../middlewares/auth');
+const ProjectSchema = require('../models/projects');
 
 /**
  * GET method to collect all models in the DB
  */
-router.get(`/${projectId}`, auth, async (req, res) => {
+router.get('/:projectId', auth, async (req, res) => {
     try {
-        models = await MlModelSchema.find({ project_id: projectId });
+        models = await MlModelSchema.find({ project_id: req.params.projectId });
         res.json(models);
     } catch(err) {
         console.log(err.message);
@@ -23,23 +24,27 @@ router.get(`/${projectId}`, auth, async (req, res) => {
 /**
  * POST method to create new models
  */
-router.post(`/${projectId}/new`, auth, async (req, res) => {
-    const { name, batch_size, training_cycles, synthetic_data } = req.body;
+router.post('/:projectId/new', auth, async (req, res) => {
+    const { name, parameters } = req.body;
     try {
         mlmodel = new MlModelSchema({
             name: name,
-            project_id: projectId,
+            project_id: req.params.projectId,
             parameters: {
-                batch_size: batch_size,
-                training_cycles: training_cycles,
-            },
-            // TODO: Make separate route file for synthetic data
-            synthetic_data: synthetic_data,
+                batch_size: parameters.batch_size,
+                training_cycles: parameters.training_cycles,
+            }
         });
 
-        mlmodel._id = mongoose.Types.ObjectId;
+        mlmodel._id = mongoose.Types.ObjectId();
 
         await mlmodel.save();
+
+        let project = await ProjectSchema.findOne({ _id: req.params.projectId })
+
+        project.mlModels.push(mlmodel);
+
+        await project.save();
 
         res.json(mlmodel);
     } catch(err) {
@@ -53,14 +58,24 @@ router.post(`/${projectId}/new`, auth, async (req, res) => {
 /**
  * DELETE method to remove a model
  */
-router.delete(`/${projectId}/remove`, auth, async (req, res) => {
+router.delete('/:projectId/remove', auth, async (req, res) => {
     try {
-        const res = await MlModelSchema.deleteOne({ name: req.name });
-        if(!res) {
+        const output = await MlModelSchema.deleteOne({ name: req.body.name });
+        if(!output) {
             return res.status(404).json({
                 message: "Model does not exist"
             });
         }
+
+        let project = await ProjectSchema.findOne({ _id: req.params.projectId })
+
+        let index = project.mlModels.findIndex(x => x.name === req.body.name);
+
+        project.mlModels.splice(index, 1);
+
+        await project.save();
+
+        res.json(req.body.name + " model deleted"); 
     } catch(err) {
         console.log(err.message);
         return res.status(500).json({
@@ -72,15 +87,27 @@ router.delete(`/${projectId}/remove`, auth, async (req, res) => {
 /**
  * PATCH method to update name of the model
  */
-router.patch(`/${projectId}/update`, auth, async(req, res) => {
-    const newName = req.body;
+router.patch('/:projectId/update', auth, async(req, res) => {
+    const { newName } = req.body;
     try {
-        const res = await MlModelSchema.findOneAndUpdate({ _id: req._id }, {$set: {name: newName}});
-        if(!res) {
+        const newModel = await MlModelSchema.findOneAndUpdate({ name: req.body.name }, {$set: {name: newName}});
+        if(!newModel) {
             return res.status(404).json({
                 message: "Model does not exist"
             });
         }
+
+        await newModel.save();
+
+        let project = await ProjectSchema.findOne({ _id: req.params.projectId })
+
+        let index = project.mlModels.findIndex(x => x.name === req.body.name);
+
+        project.mlModels[index].name = newName;
+
+        await project.save();
+
+        res.json("Model name updated"); 
     } catch(err) {
         console.log(err.message);
         return res.status(500).json({
@@ -89,4 +116,4 @@ router.patch(`/${projectId}/update`, auth, async(req, res) => {
     }
 });
 
-module.exports(router);
+module.exports = router;

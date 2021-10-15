@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-const { ObjectId } = require("bson");
-const ProjectSchema = require('../models/projects');
+const ProjectSchema = require('../models/projects').schema;
 
 const UserSchema = new mongoose.Schema({
     _id: {
-        type: ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
     email: {
@@ -18,4 +17,4 @@ const UserSchema = new mongoose.Schema({
     projects: [ProjectSchema],
 })
 
-module.exports = mongoose.model("Users", UserSchema);
+module.exports = mongoose.model('Users', UserSchema);

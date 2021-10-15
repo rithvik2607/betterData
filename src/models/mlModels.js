@@ -1,5 +1,6 @@
 const { ObjectId } = require('bson');
 const mongoose = require('mongoose');
+const SyntheticDataSchema = require('../models/syntheticData').schema;
 
 const MlModelSchema = mongoose.Schema({
     _id: {
@@ -24,9 +25,7 @@ const MlModelSchema = mongoose.Schema({
             required: true,
         }
     },
-    synthetic_data_url: {
-        type: String,
-    }
+    synthetic_data: [SyntheticDataSchema]
 });
 
-module.exports = mongoose.model("MlModels", MlModelSchema);
+module.exports = mongoose.model('MlModels', MlModelSchema);

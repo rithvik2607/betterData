@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { ObjectId } = require('bson');
 
-const RealDataSchema = new mongoose.Schema({
+const SyntheticDataSchema = new mongoose.Schema({
     _id: {
         type: ObjectId,
         required: true
@@ -10,13 +10,14 @@ const RealDataSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    project_id: {
-        type: ObjectId
+    mlmodelId: {
+        type: ObjectId,
+        required: true
     },
-    real_data_url: {
+    url: {
         type: String,
         required: true,
     }
 });
 
-module.exports = mongoose.model('RealData', RealDataSchema);
+module.exports = mongoose.model('SyntheticData', SyntheticDataSchema);

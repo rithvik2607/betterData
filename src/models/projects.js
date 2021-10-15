@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const MlModelSchema = require('./mlModels');
-const RealDataSchema = require('./realData');
+const  MlModelSchema = require('./mlModels').schema;
+const  RealDataSchema = require('./realData').schema;
 const { ObjectId } = require('bson');
 
 const ProjectsSchema = new mongoose.Schema({
@@ -16,8 +16,8 @@ const ProjectsSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    mlModels: MlModelSchema,
-    data: RealDataSchema,
+    mlModels: [MlModelSchema],
+    realData: [RealDataSchema],
 });
 
-module.exports = mongoose.model("Projects", ProjectsSchema);
+module.exports = mongoose.model('Projects', ProjectsSchema);

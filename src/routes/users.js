@@ -29,7 +29,7 @@ router.post("/signup",
 
         const { email, password } = req.body;
         try {
-            let user = await UserSchema.findOne({ email });
+            let user = await UserSchema.findOne({ email: email });
             if (user) {
                 return res.status(400).json({
                     msg: "User Already Exists"
@@ -44,7 +44,7 @@ router.post("/signup",
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
 
-            user._id = mongoose.Types.ObjectId;
+            user._id = mongoose.Types.ObjectId();
 
             await user.save();
 
@@ -90,17 +90,19 @@ router.post("/login",
 
         const { email, password } = req.body;
         try {
-            let user = await UserSchema.findOne({ email });
-            if(!user)
+            let user = await UserSchema.findOne({ email: email });
+            if(!user) {
                 return res.status(404).json({
                     message: "User does not exist"
                 });
+            }
 
             const isMatch = await bcrypt.compare(password, user.password);
-            if(!isMatch)
+            if(!isMatch) {
                 return res.status(400).json({
                     message: "Incorrect Password"
                 });
+            }
             
             const payload = {
                 user: {
@@ -125,6 +127,38 @@ router.post("/login",
 );
 
 /**
+ * POST method to add projects
+ */
+router.post("/project", auth, async (req, res) => {
+    const { name } = req.body;
+    try {
+        let project = await ProjectSchema.findOne({ name: name });
+        if(project) {
+            return res.status(400).json({
+                msg: "Project Already Exists"
+            });
+        }
+        project = new ProjectSchema({
+            user_id: req.user.id,
+            name: name,
+        });
+        
+        project._id = mongoose.Types.ObjectId();
+
+        let user = await UserSchema.findOne({ _id: req.user.id });
+        user.projects.push(project);
+
+        await project.save();
+        await user.save();
+
+        res.json(project);
+    } catch(err) {
+        console.log(err.message);
+        res.status(500).json({ message: "Unable to find projects of user" });
+    }
+})
+
+/**
  * GET method to get info of user
  */
 router.get("/me", auth, async (req, res) => {
@@ -137,4 +171,4 @@ router.get("/me", auth, async (req, res) => {
     }
 });
 
-module.exports(router);
+module.exports = router;
