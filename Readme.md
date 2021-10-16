@@ -10,19 +10,25 @@ An API to handle generation of synthetic datasets. This was made for Betterdata.
 git clone git@github.com:rithvik2607/betterData.git
 ```
 
-2. Install dependencies
+2. Change directory to betterData
+
+```
+cd betterData
+```
+
+3. Install dependencies
 
 ```
 npm install
 ```
 
-3. Start the server
+4. Start the server
 
 ```
 nodemon index.js
 ```
 
-4. Open Postman and test the endpoints
+5. Open Postman and test the endpoints
 
 ## Explanation
 
