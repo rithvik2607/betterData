@@ -1,6 +1,6 @@
 # Betterdata Backend API
 
-An API to handle generation of synthetic datasets. This was made as part of the Betterdata internship task.
+An API to handle generation of synthetic datasets. This was made for Betterdata.
 
 ## How to run the code
 
